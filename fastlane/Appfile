@@ -1,6 +1,6 @@
 app_identifier("co.jp.sample.sampleApp") # The bundle identifier of your app
 apple_id("hanatani.mitsu@gmail.com") # Your Apple email address
-ENV["MATCH_PASSWORD"] = ${{ secrets.MATCH_PASSWORD }}
+#ENV["MATCH_PASSWORD"] = ${{ secrets.MATCH_PASSWORD }}
 
 # For more information about the Appfile, see:
 #     https://docs.fastlane.tools/advanced/#appfile
