@@ -21,17 +21,20 @@ platform :ios do
     #run_tests(device: "iPhone 13 Pro Max", scheme: "sample AppTests")
     #run_tests(devices: ["iPhone 13", "iPhone 13 Pro Max"], open_report: true, only_testing: "sample AppTests")
     #run_tests(devices: ["iPhone 13 Pro Max"], open_report: true, skip_testing: "sample AppUITests")
-    run_tests(device: "iPhone 13 Pro Max", only_testing: "sample AppTests")
+    run_tests(device: "iPhone 8", only_testing: "sample AppTests")
   end
 
   # 現在のブランチへコミット
   lane :commit_push do |options|
-     git_commit(path: "./*", message: "gitからビルドアップ")
+     puts git_remote_branch
+     git_commit(path: "./*", message: options[:msg])
      push_to_git_remote(tags:false)
   end
 
   # version build 番号を更新して.ipa ファイルの作成
   lane :build do |options|
+    import_certificates_and_provisioning_profile
+
     # バージョン更新
     if options[:version]
       increment_version_number(
@@ -39,43 +42,61 @@ platform :ios do
       )
     end
     
+    #increment_build_number(
+    #  build_number: options[:build]
+    #)
     trailing_number = get_build_number.split('.').last.to_i
     # get_version_numberを取得、ビルド番号の末尾の値を1つ増やす
     next_build_number = "#{get_version_number}.#{trailing_number + 1}"
     # ビルド番号を指定し、更新
     increment_build_number(build_number: next_build_number)
-    
-    # .ipaファイルの作成
+    #match(type: "development")
+    match(type: "development", readonly: true)
     build_ios_app(
       scheme: "sample App",
       configuration: "Debug",
       export_method: "development",
-      output_directory: "./ipa/" + Time.new.strftime("%Y%m%d/%H%M"),
+      output_directory: "./build/ipa/",
       output_name: "MyApp.ipa",
       include_bitcode: false,
       export_options: {
          compileBitcode: false,
-         uploadBitcode: false,
-         provisioningProfiles: {
-          "co.jp.sample.sampleApp" => "co.jp.sample.sampleApp",
-         }
+         uploadBitcode: false
+#         provisioningProfiles: {
+#           "co.jp.sample.sampleApp" => "sampleAppProvisioning",
+#         }
       }
     )
   end
 
-  # teamIDとbundle_identifierの紐づけ
-  private_lane :settings_team_id_and_bundle_identifier do
+  private_lane :import_certificates_and_provisioning_profile do
+#    setup_ci(
+#      force: true,
+#      provider: "travis",
+#    )
+#    create_keychain(
+#        name: "mykeychain",
+#        password: ENV["KEYCHAIN_PASSWORD"],
+#        timeout: 1800
+#    )
     update_code_signing_settings(
       use_automatic_signing: false,
       team_id: ENV['TEAM_ID'],
       code_sign_identity: "iPhone Developer",
-      bundle_identifier: ENV['BUNDIE_IDENTIFIER']
+      bundle_identifier: "co.jp.sample.sampleApp"
     )
+#    import_certificate(
+#        certificate_path: "cert/development/証明書.p12",
+#        certificate_password: ENV["CERT_PASSWORD"],
+#        keychain_name: "mykeychain",
+#        keychain_password: ENV["KEYCHAIN_PASSWORD"]
+#    )
+#    install_provisioning_profile(path: "cert/development/9373ec01-333c-40a2-9fd1-03fa0509e0ac.mobileprovision")
   end
 
-  # GitHub用 version build 番号を更新して.ipa ファイルの作成
-  lane :build_GitHub do |options|
-    settings_team_id_and_bundle_identifier
+  # circleCI用 version build 番号を更新して.ipa ファイルの作成
+  lane :build_circleCI do |options|
+    import_certificates_and_provisioning_profile
 
     trailing_number = get_build_number.split('.').last.to_i
     # get_version_numberを取得、ビルド番号の末尾の値を1つ増やす
