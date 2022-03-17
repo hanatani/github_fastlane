@@ -54,7 +54,10 @@ jobs:
 #       # testする
 #      - name: test
 #        run: bundle exec fastlane test
-      
+      #- run: pod install # Install CocoaPods dependencies
+     - name: git
+        run: git clone git@github.com:hanatani/certificates.git /var/folders/bl/wbxjgtzx7j5_mjsmfr3ynlc00000gp/T/d20220316-1685-1q599h0 # Run tests using Fastlane
+
       # .ipaファイルを作成する
       - name: Upload a new build_GitHub to .ipa
         env:
