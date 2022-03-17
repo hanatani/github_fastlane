@@ -54,9 +54,6 @@ jobs:
 #       # testする
 #      - name: test
 #        run: bundle exec fastlane test
-      - add_ssh_keys:
-          fingerprints:
-            - "ff:45:86:ac:49:ef:6f:7a:19:75:31:9b:08:32:04:2f"
       
       # .ipaファイルを作成する
       - name: Upload a new build_GitHub to .ipa
